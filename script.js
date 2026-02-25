@@ -182,20 +182,22 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
-// Escala o menu para caber sempre no ecrã, proporcional à largura disponível
+// Escala o menu para caber sempre no ecrã, limitado por largura E altura
 function scaleMenu() {
   const W = window.innerWidth;
+  const H = window.innerHeight;
 
-  // Largura total do painel ao scale=1 (tamanho original):
-  // 4 botões (92px) + 3 gaps internos (18px) + 2 padding lateral (26px*2) = 474px
-  const panelWidthAt1 = 4 * 92 + 3 * 18 + 2 * 26; // 474px
+  // Dimensões do painel ao scale=1 (tamanho original):
+  // Largura:  4 botões (92px) + 3 gaps (18px) + 2 padding (26px) = 474px
+  // Altura:   2 botões (64px) + 1 label (24px) + 2 row-gaps (14px) + 2 padding (22px) = 224px
+  const panelW = 4 * 92 + 3 * 18 + 2 * 26; // 474px
+  const panelH = 2 * 64 + 24 + 2 * 14 + 2 * 22; // 224px
 
-  // Queremos que o painel ocupe no máximo 92% da largura do ecrã
-  const maxWidth = W * 0.92;
-  let scale = maxWidth / panelWidthAt1;
+  const scaleByWidth  = (W * 0.92) / panelW;
+  const scaleByHeight = (H * 0.32) / panelH;
 
-  // No PC não queremos que fique maior que o original
-  scale = Math.min(scale, 1);
+  // O mais restritivo dos dois, sem ultrapassar o tamanho original
+  let scale = Math.min(scaleByWidth, scaleByHeight, 1);
 
   const r = document.documentElement;
   r.style.setProperty('--btn-w',        Math.round(92  * scale) + 'px');
@@ -849,7 +851,7 @@ function resetControlsPosition() {
   if (!controls) return;
   controls.style.left      = '50%';
   controls.style.top       = '';
-  controls.style.bottom    = '12px';
+  controls.style.bottom    = '4px';
   controls.style.transform = 'translateX(-50%)';
   controls.style.cursor    = '';
 }

@@ -184,13 +184,26 @@ function resizeCanvas() {
 
 // Escala o menu proporcionalmente ao ecrã
 function scaleMenu() {
-  // Referência: desenho original foi feito para um ecrã de ~1200px de largura
-  // Botão base: 92px num ecrã de 1200px = 7.67%
-  // Limitamos entre um mínimo (mobile) e máximo (PC grande)
   const W = window.innerWidth;
   const H = window.innerHeight;
-  const ref = Math.min(W, H * 2); // usa largura mas limita para não ficar enorme em landscape mobile
-  const scale = Math.min(1, Math.max(0.45, ref / 1100));
+  const isPortrait = H > W;
+
+  // Escala base: referência de 1100px de largura, entre 0.45 e 1
+  const ref = Math.min(W, H * 2);
+  let scale = Math.min(1, Math.max(0.45, ref / 1100));
+
+  // Em dispositivos móveis (ecrã pequeno), aplica multiplicador extra
+  const isMobile = Math.max(W, H) < 1024;
+  if (isMobile) {
+    if (isPortrait) {
+      scale *= 2.0;  // +100% em portrait
+    } else {
+      scale *= 1.2;  // +20% em landscape
+    }
+  }
+
+  // Nunca ultrapassa o tamanho original (scale=1)
+  scale = Math.min(scale, 1);
 
   const r = document.documentElement;
   r.style.setProperty('--btn-w',        Math.round(92  * scale) + 'px');
@@ -801,6 +814,7 @@ function bindDraggableControls() {
     controls.style.bottom = 'auto';
     controls.style.cursor = 'grabbing';
 
+    resetAutoHide();
     e.preventDefault();
   }
 
@@ -817,6 +831,8 @@ function bindDraggableControls() {
 
     controls.style.left = newX + 'px';
     controls.style.top  = newY + 'px';
+
+    resetAutoHide(); // mantém o menu visível durante o drag
     e.preventDefault();
   }
 
@@ -824,6 +840,7 @@ function bindDraggableControls() {
     if (!isDragging) return;
     isDragging = false;
     controls.style.cursor = '';
+    resetAutoHide();
   }
 
   controls.addEventListener('mousedown',  startDrag);

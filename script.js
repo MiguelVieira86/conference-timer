@@ -199,6 +199,10 @@ function scaleMenu() {
   // O mais restritivo dos dois, sem ultrapassar o tamanho original
   let scale = Math.min(scaleByWidth, scaleByHeight, 1);
 
+  // Em landscape, aumenta 30%
+  const isPortrait = H > W;
+  if (!isPortrait) scale = Math.min(scale * 1.3, 1);
+
   const r = document.documentElement;
   r.style.setProperty('--btn-w',        Math.round(92  * scale) + 'px');
   r.style.setProperty('--btn-h',        Math.round(64  * scale) + 'px');

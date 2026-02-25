@@ -1,4 +1,4 @@
-const CACHE = "conference-timer-v3";
+const CACHE = "conference-timer-v4";
 const FILES = [
   "./index.html",
   "./style.css",
@@ -9,7 +9,6 @@ const FILES = [
   "./icon-512.png"
 ];
 
-// Instalação: guarda todos os ficheiros em cache
 self.addEventListener("install", e => {
   e.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(FILES))
@@ -17,7 +16,6 @@ self.addEventListener("install", e => {
   self.skipWaiting();
 });
 
-// Activação: limpa caches antigas
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -32,7 +30,6 @@ self.addEventListener("fetch", e => {
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Actualiza a cache com a versão mais recente
         const clone = response.clone();
         caches.open(CACHE).then(cache => cache.put(e.request, clone));
         return response;

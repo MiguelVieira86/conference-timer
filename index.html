@@ -41,7 +41,17 @@
   <script src="script.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js");
+      navigator.serviceWorker.register("./sw.js").then(reg => {
+        // Quando há uma nova versão do service worker, recarrega a página automaticamente
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "activated") {
+              window.location.reload();
+            }
+          });
+        });
+      });
     }
   </script>
 </body>

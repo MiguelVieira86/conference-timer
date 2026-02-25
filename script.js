@@ -182,6 +182,30 @@ function resizeCanvas() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+// Escala o menu proporcionalmente ao ecrã
+function scaleMenu() {
+  // Referência: desenho original foi feito para um ecrã de ~1200px de largura
+  // Botão base: 92px num ecrã de 1200px = 7.67%
+  // Limitamos entre um mínimo (mobile) e máximo (PC grande)
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  const ref = Math.min(W, H * 2); // usa largura mas limita para não ficar enorme em landscape mobile
+  const scale = Math.min(1, Math.max(0.45, ref / 1100));
+
+  const r = document.documentElement;
+  r.style.setProperty('--btn-w',        Math.round(92  * scale) + 'px');
+  r.style.setProperty('--btn-h',        Math.round(64  * scale) + 'px');
+  r.style.setProperty('--gap-x',        Math.round(18  * scale) + 'px');
+  r.style.setProperty('--row-gap',      Math.round(14  * scale) + 'px');
+  r.style.setProperty('--label-h',      Math.round(24  * scale) + 'px');
+  r.style.setProperty('--panel-pad-x',  Math.round(26  * scale) + 'px');
+  r.style.setProperty('--panel-pad-y',  Math.round(22  * scale) + 'px');
+  r.style.setProperty('--panel-radius', Math.round(26  * scale) + 'px');
+  r.style.setProperty('--label-font',   Math.round(13  * scale) + 'px');
+  r.style.setProperty('--icon-font',    Math.round(22  * scale) + 'px');
+  r.style.setProperty('--icon-font-sm', Math.round(19  * scale) + 'px');
+}
+
 function measureGlyph(ch) {
   const m = ctx.measureText(ch);
   return {
@@ -728,6 +752,7 @@ function bindKeyboardShortcuts() {
 // ---------- Start ----------
 async function start() {
   resizeCanvas();
+  scaleMenu();
 
   if (document.fonts && document.fonts.load) {
     try {
@@ -815,13 +840,14 @@ function resetControlsPosition() {
   if (!controls) return;
   controls.style.left      = '50%';
   controls.style.top       = '';
-  controls.style.bottom    = '2vh';
+  controls.style.bottom    = '22px';
   controls.style.transform = 'translateX(-50%)';
   controls.style.cursor    = '';
 }
 
 window.addEventListener("resize", () => {
   resizeCanvas();
+  scaleMenu();
   drawTimer();
   resetControlsPosition();
   resetAutoHide();
@@ -829,12 +855,14 @@ window.addEventListener("resize", () => {
 
 document.addEventListener("fullscreenchange", () => {
   resizeCanvas();
+  scaleMenu();
   drawTimer();
   resetControlsPosition();
   resetAutoHide();
 });
 document.addEventListener("webkitfullscreenchange", () => {
   resizeCanvas();
+  scaleMenu();
   drawTimer();
   resetControlsPosition();
   resetAutoHide();
@@ -842,6 +870,7 @@ document.addEventListener("webkitfullscreenchange", () => {
 
 screen.orientation && screen.orientation.addEventListener("change", () => {
   resizeCanvas();
+  scaleMenu();
   drawTimer();
   resetControlsPosition();
   resetAutoHide();

@@ -1,4 +1,4 @@
-const CACHE = "conference-timer-v2";
+const CACHE = "conference-timer-v3";
 const FILES = [
   "./index.html",
   "./style.css",
@@ -27,9 +27,16 @@ self.addEventListener("activate", e => {
   self.clients.claim();
 });
 
-// Pedidos: serve sempre da cache (offline first)
+// Network first: tenta sempre o servidor, usa cache só se offline
 self.addEventListener("fetch", e => {
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request)
+      .then(response => {
+        // Actualiza a cache com a versão mais recente
+        const clone = response.clone();
+        caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(e.request))
   );
 });

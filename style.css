@@ -17,61 +17,89 @@ html, body {
   height: 100vh;
 }
 
-/* ---- Menu ---- */
+/* Menu */
 #controls {
   position: fixed;
   left: 50%;
-  bottom: 2vh;
+  bottom: 22px;
   transform: translateX(-50%);
   z-index: 10;
-  width: min(92vw, 520px);
 
   opacity: 1;
   transition: opacity 0.5s ease;
   pointer-events: auto;
 }
 
+/* quando está a desaparecer */
 #controls.is-fading {
   opacity: 0;
   pointer-events: none;
 }
 
-/* ---- Panel ---- */
+/* ---------- Compact glassy panel + buttons ---------- */
+/* Os valores das variáveis são definidos dinamicamente pelo JavaScript
+   com base nas dimensões reais do ecrã */
+:root{
+  --panel-radius: 26px;
+  --panel-pad-x: 26px;
+  --panel-pad-y: 22px;
+
+  --btn-w: 92px;
+  --btn-h: 64px;
+
+  --gap-x: 18px;
+  --row-gap: 14px;
+  --label-h: 24px;
+  --label-font: 13px;
+  --icon-font: 22px;
+  --icon-font-sm: 19px;
+}
+
 .panel {
-  padding: 2.5% 3%;
-  border-radius: 16px;
+  padding: var(--panel-pad-y) var(--panel-pad-x);
+  border-radius: var(--panel-radius);
 
   background: rgba(0, 0, 0, 0.40);
   border: 1px solid rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(10px);
 
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.65),
+    0 28px 90px rgba(0, 0, 0, 0.65),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
-/* ---- Grid: 4 colunas iguais ---- */
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: auto auto auto;
-  column-gap: 3%;
-  row-gap: 6%;
+  /* 4 colunas de tamanho igual */
+  grid-template-columns: var(--btn-w) var(--btn-w) var(--btn-w) var(--btn-w);
+  grid-template-rows: var(--btn-h) var(--label-h) var(--btn-h);
+  column-gap: var(--gap-x);
+  row-gap: var(--row-gap);
   align-items: center;
   justify-items: center;
 }
 
-/* ---- Botões ---- */
+.label, .label-spacer {
+  font: 700 var(--label-font)/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(255, 255, 255, 0.78);
+  letter-spacing: 0.32em;
+  user-select: none;
+  pointer-events: none;
+}
+
+.label-spacer {
+  /* Ocupa as 2 últimas colunas da linha de labels */
+  grid-column: span 2;
+}
+
+/* Buttons (visual only; keeps original functionality) */
 .btn {
-  width: 100%;
-  aspect-ratio: 1.5 / 1;
-  border-radius: 12px;
+  width: var(--btn-w);
+  height: var(--btn-h);
+  border-radius: 22px;
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.10) 0%,
-    rgba(255, 255, 255, 0.03) 45%,
-    rgba(0, 0, 0, 0.06) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.06) 100%);
   color: rgba(255, 255, 255, 0.92);
 
   display: flex;
@@ -79,78 +107,64 @@ html, body {
   justify-content: center;
   cursor: pointer;
   user-select: none;
-  font-size: clamp(10px, 2.5vw, 20px);
-  font-weight: 900;
 
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.55),
+    0 18px 40px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -4px 8px rgba(0, 0, 0, 0.55);
+    inset 0 -14px 22px rgba(0, 0, 0, 0.55);
 
-  transition: transform 120ms ease, background 180ms ease,
-              border-color 180ms ease, box-shadow 180ms ease;
+  transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
-.btn::before {
-  content: "";
-  position: absolute;
-  inset: 6%;
-  border-radius: 9px;
-  pointer-events: none;
+.btn::before{
+  content:"";
+  position:absolute;
+  width: calc(var(--btn-w) - 10px);
+  height: calc(var(--btn-h) - 10px);
+  border-radius: 18px;
+  pointer-events:none;
   opacity: 0.65;
-  background: radial-gradient(120% 120% at 50% 0%,
-    rgba(255,255,255,0.14) 0%,
-    rgba(255,255,255,0.03) 42%,
-    rgba(255,255,255,0) 70%);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 42%, rgba(255,255,255,0) 70%);
 }
 
 .btn, .btn * { position: relative; }
 
-/* Botão play/pause ocupa 2 colunas */
+/* Botão largo ocupa 2 colunas */
 .btn-wide {
   grid-column: span 2;
-  width: 100%;
-  aspect-ratio: 3.3 / 1;
+  width: calc(var(--btn-w) * 2 + var(--gap-x));
 }
 
-/* ---- Labels ---- */
-.label, .label-spacer {
-  font: 700 clamp(8px, 1.8vw, 13px)/1
-    system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: rgba(255, 255, 255, 0.78);
-  letter-spacing: 0.28em;
-  user-select: none;
-  pointer-events: none;
+.btn.btn-wide::before{
+  width: calc(var(--btn-w) * 2 + var(--gap-x) - 10px);
 }
 
-.label-spacer {
-  grid-column: span 2;
-}
-
-/* ---- Estados dos botões ---- */
 .btn:hover {
   border-color: rgba(255, 255, 255, 0.20);
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.04) 50%,
-    rgba(0, 0, 0, 0.08) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.08) 100%);
+  box-shadow:
+    0 22px 52px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -16px 26px rgba(0, 0, 0, 0.58);
   transform: translateY(-1px);
 }
 
 .btn:active {
   transform: translateY(1px);
   border-color: rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0.02) 55%,
-    rgba(0, 0, 0, 0.12) 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(0, 0, 0, 0.12) 100%);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 26px rgba(0, 0, 0, 0.62);
 }
 
 .btn:focus-visible {
   outline: none;
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.62),
+    0 22px 52px rgba(0, 0, 0, 0.62),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -16px 26px rgba(0, 0, 0, 0.58),
     0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
@@ -158,4 +172,21 @@ html, body {
   opacity: 0.45;
   cursor: default;
   transform: none;
+}
+
+/* icon sizing */
+#plusMin, #plusSec, #minusMin, #minusSec {
+  font-size: var(--icon-font);
+  font-weight: 900;
+}
+
+#playPause, #reset, #fullscreen {
+  font-size: var(--icon-font-sm);
+  font-weight: 900;
+}
+
+/* Keep SVG icons crisp if any */
+.icon {
+  width: 20px;
+  height: 20px;
 }

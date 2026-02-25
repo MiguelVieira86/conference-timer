@@ -259,12 +259,11 @@ function drawTimer(forceFlash = false) {
     }
   }
 
-  // Centrar verticalmente: baseline = meio do ecrã + metade da altura acima da baseline - metade abaixo
-  // A fonte Technology tem métricas com espaço interno extra acima,
-  // por isso aplicamos um offset de correcção visual para baixo
-  const ascent    = digit.ascent  || (fontSize * 0.75);
-  const descent   = digit.descent || (fontSize * 0.25);
-  const baselineY = (H / 2) + (ascent - descent) / 2 + fontSize * 0.08;
+  // Centrar verticalmente com a caixa visual real do glifo
+  // ascent e descent vêm do measureGlyph("8") — são os valores reais do canvas
+  const ascent    = digit.ascent;
+  const descent   = digit.descent;
+  const baselineY = Math.round((H + ascent - descent) / 2);
 
   const widths = [digitCell, digitCell, colonCell, digitCell, digitCell];
   const totalW = widths.reduce((a, b) => a + b, 0) + gap * 4;
@@ -586,81 +585,6 @@ function bindCanvasDoubleClick() {
   });
 }
 
-// ---------- Arrastar menu de controlo ----------
-function bindDraggableControls() {
-  if (!controls) return;
-  
-  let isDragging = false;
-  let offsetX = 0; // Offset do clique em relação ao elemento
-  let offsetY = 0;
-  let currentX = 0; // Posição actual do elemento
-  let currentY = 0;
-  
-  // Inicia o arrastar
-  function startDrag(e) {
-    // Só permite arrastar se clicar fora dos botões
-    if (e.target.closest('.btn')) return;
-    
-    isDragging = true;
-    
-    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-    
-    // Calcula o offset entre o clique e o elemento
-    const rect = controls.getBoundingClientRect();
-    offsetX = clientX - rect.left;
-    offsetY = clientY - rect.top;
-    
-    controls.style.cursor = 'grabbing';
-    
-    // Remove a centragem inicial e passa para posicionamento absoluto
-    controls.style.transform = 'none';
-    controls.style.left = rect.left + 'px';
-    controls.style.bottom = 'auto';
-    controls.style.top = rect.top + 'px';
-    
-    currentX = rect.left;
-    currentY = rect.top;
-    
-    e.preventDefault();
-  }
-  
-  // Arrasta
-  function drag(e) {
-    if (!isDragging) return;
-    
-    const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-    const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-    
-    // Calcula a nova posição mantendo o offset do clique
-    currentX = clientX - offsetX;
-    currentY = clientY - offsetY;
-    
-    controls.style.left = currentX + 'px';
-    controls.style.top = currentY + 'px';
-    
-    e.preventDefault();
-  }
-  
-  // Para o arrastar
-  function stopDrag() {
-    if (!isDragging) return;
-    
-    isDragging = false;
-    controls.style.cursor = '';
-  }
-  
-  // Mouse events
-  controls.addEventListener('mousedown', startDrag);
-  window.addEventListener('mousemove', drag);
-  window.addEventListener('mouseup', stopDrag);
-  
-  // Touch events
-  controls.addEventListener('touchstart', startDrag, { passive: false });
-  window.addEventListener('touchmove', drag, { passive: false });
-  window.addEventListener('touchend', stopDrag);
-}
-
 // ---------- Bind UI (robusto) ----------
 
 // Press-and-hold que replica o comportamento das setas do teclado
@@ -786,7 +710,6 @@ async function start() {
   bindControls();
   bindKeyboardShortcuts();
   bindCanvasDoubleClick();
-  bindDraggableControls();
   bindAutoHide();
 
   drawTimer();
@@ -794,20 +717,39 @@ async function start() {
   resetAutoHide();
 }
 
+// Repõe o menu para a posição central original
+function resetControlsPosition() {
+  if (!controls) return;
+  controls.style.left = "50%";
+  controls.style.top = "";
+  controls.style.bottom = "22px";
+  controls.style.transform = "translateX(-50%)";
+}
+
 window.addEventListener("resize", () => {
   resizeCanvas();
   drawTimer();
+  resetControlsPosition();
   resetAutoHide();
 });
 
 document.addEventListener("fullscreenchange", () => {
   resizeCanvas();
   drawTimer();
+  resetControlsPosition();
   resetAutoHide();
 });
 document.addEventListener("webkitfullscreenchange", () => {
   resizeCanvas();
   drawTimer();
+  resetControlsPosition();
+  resetAutoHide();
+});
+
+screen.orientation && screen.orientation.addEventListener("change", () => {
+  resizeCanvas();
+  drawTimer();
+  resetControlsPosition();
   resetAutoHide();
 });
 

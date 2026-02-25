@@ -1,4 +1,4 @@
-const CACHE = "conference-timer-v1";
+const CACHE = "conference-timer-v2";
 const FILES = [
   "./index.html",
   "./style.css",

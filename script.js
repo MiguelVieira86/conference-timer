@@ -192,6 +192,40 @@ function measureGlyph(ch) {
   };
 }
 
+let _cachedFontSize = 0;
+let _cachedBaseline = { realAscent: 0, realDescent: 0 };
+
+function measureGlyphPixels(fontSize) {
+  if (fontSize === _cachedFontSize) return _cachedBaseline;
+
+  const tmpCanvas = document.createElement('canvas');
+  const tmpSize = Math.ceil(fontSize * 1.5);
+  tmpCanvas.width  = tmpSize;
+  tmpCanvas.height = tmpSize;
+  const tmpCtx = tmpCanvas.getContext('2d');
+  tmpCtx.font = `${fontSize}px Technology, monospace`;
+  tmpCtx.fillStyle = '#fff';
+  tmpCtx.fillText('8', 0, fontSize);
+  const imgData = tmpCtx.getImageData(0, 0, tmpSize, tmpSize).data;
+
+  let topPx = tmpSize, bottomPx = 0;
+  for (let y = 0; y < tmpSize; y++) {
+    for (let x = 0; x < tmpSize; x++) {
+      if (imgData[(y * tmpSize + x) * 4 + 3] > 10) {
+        if (y < topPx)    topPx    = y;
+        if (y > bottomPx) bottomPx = y;
+      }
+    }
+  }
+
+  _cachedFontSize = fontSize;
+  _cachedBaseline = {
+    realAscent:  fontSize - topPx,
+    realDescent: bottomPx - fontSize,
+  };
+  return _cachedBaseline;
+}
+
 function computeFontSizeAndLayout(W, H) {
   let fs = Math.floor(H * 0.88);
 
@@ -259,11 +293,9 @@ function drawTimer(forceFlash = false) {
     }
   }
 
-  // Centrar verticalmente com a caixa visual real do glifo
-  // ascent e descent vêm do measureGlyph("8") — são os valores reais do canvas
-  const ascent    = digit.ascent;
-  const descent   = digit.descent;
-  const baselineY = Math.round((H + ascent - descent) / 2);
+  // Centrar verticalmente com medição real dos pixels do glifo (cacheada)
+  const { realAscent, realDescent } = measureGlyphPixels(fontSize);
+  const baselineY = Math.round((H + realAscent - realDescent) / 2);
 
   const widths = [digitCell, digitCell, colonCell, digitCell, digitCell];
   const totalW = widths.reduce((a, b) => a + b, 0) + gap * 4;
@@ -710,6 +742,7 @@ async function start() {
   bindControls();
   bindKeyboardShortcuts();
   bindCanvasDoubleClick();
+  bindDraggableControls();
   bindAutoHide();
 
   drawTimer();
@@ -717,13 +750,74 @@ async function start() {
   resetAutoHide();
 }
 
-// Repõe o menu para a posição central original
+// ---------- Arrastar menu de controlo ----------
+function bindDraggableControls() {
+  if (!controls) return;
+
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  function startDrag(e) {
+    if (e.target.closest('.btn')) return;
+    isDragging = true;
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const rect = controls.getBoundingClientRect();
+    offsetX = clientX - rect.left;
+    offsetY = clientY - rect.top;
+
+    // Passa para posicionamento absoluto
+    controls.style.transform = 'none';
+    controls.style.left   = rect.left + 'px';
+    controls.style.top    = rect.top  + 'px';
+    controls.style.bottom = 'auto';
+    controls.style.cursor = 'grabbing';
+
+    e.preventDefault();
+  }
+
+  function drag(e) {
+    if (!isDragging) return;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Mantém dentro dos limites do ecrã
+    const pw = controls.offsetWidth;
+    const ph = controls.offsetHeight;
+    const newX = Math.min(Math.max(0, clientX - offsetX), window.innerWidth  - pw);
+    const newY = Math.min(Math.max(0, clientY - offsetY), window.innerHeight - ph);
+
+    controls.style.left = newX + 'px';
+    controls.style.top  = newY + 'px';
+    e.preventDefault();
+  }
+
+  function stopDrag() {
+    if (!isDragging) return;
+    isDragging = false;
+    controls.style.cursor = '';
+  }
+
+  controls.addEventListener('mousedown',  startDrag);
+  window.addEventListener('mousemove',    drag);
+  window.addEventListener('mouseup',      stopDrag);
+
+  controls.addEventListener('touchstart', startDrag, { passive: false });
+  window.addEventListener('touchmove',    drag,      { passive: false });
+  window.addEventListener('touchend',     stopDrag);
+}
+
+// Repõe o menu para a posição central original (após rotação/resize)
 function resetControlsPosition() {
   if (!controls) return;
-  controls.style.left = "50%";
-  controls.style.top = "";
-  controls.style.bottom = "22px";
-  controls.style.transform = "translateX(-50%)";
+  controls.style.left      = '50%';
+  controls.style.top       = '';
+  controls.style.bottom    = '2vh';
+  controls.style.transform = 'translateX(-50%)';
+  controls.style.cursor    = '';
 }
 
 window.addEventListener("resize", () => {

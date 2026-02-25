@@ -17,76 +17,61 @@ html, body {
   height: 100vh;
 }
 
-/* Menu */
+/* ---- Menu ---- */
 #controls {
   position: fixed;
   left: 50%;
-  bottom: 22px;
+  bottom: 2vh;
   transform: translateX(-50%);
   z-index: 10;
+  width: min(92vw, 520px);
 
   opacity: 1;
   transition: opacity 0.5s ease;
   pointer-events: auto;
 }
 
-/* quando está a desaparecer */
 #controls.is-fading {
   opacity: 0;
   pointer-events: none;
 }
 
-/* ---------- Compact glassy panel + buttons ---------- */
-:root{
-  --panel-radius: 2.2vmin;
-  --panel-pad-x: 2.2vmin;
-  --panel-pad-y: 1.8vmin;
-
-  --btn-w: 8vmin;
-  --btn-h: 5.5vmin;
-
-  --gap-x: 1.5vmin;
-  --row-gap: 1.2vmin;
-  --label-h: 2vmin;
-}
-
+/* ---- Panel ---- */
 .panel {
-  padding: var(--panel-pad-y) var(--panel-pad-x);
-  border-radius: var(--panel-radius);
+  padding: 2.5% 3%;
+  border-radius: 16px;
 
   background: rgba(0, 0, 0, 0.40);
   border: 1px solid rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(10px);
 
   box-shadow:
-    0 28px 90px rgba(0, 0, 0, 0.65),
+    0 12px 40px rgba(0, 0, 0, 0.65),
     inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
+/* ---- Grid: 4 colunas iguais ---- */
 .grid {
   display: grid;
-  /* 4 colunas de tamanho igual */
-  grid-template-columns: var(--btn-w) var(--btn-w) var(--btn-w) var(--btn-w);
-  grid-template-rows: var(--btn-h) var(--label-h) var(--btn-h);
-  column-gap: var(--gap-x);
-  row-gap: var(--row-gap);
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: 3%;
+  row-gap: 6%;
   align-items: center;
   justify-items: center;
 }
 
-.label-spacer {
-  /* Ocupa as 2 últimas colunas da linha de labels */
-  grid-column: span 2;
-}
-
-/* Buttons (visual only; keeps original functionality) */
+/* ---- Botões ---- */
 .btn {
-  width: var(--btn-w);
-  height: var(--btn-h);
-  border-radius: 1.8vmin;
+  width: 100%;
+  aspect-ratio: 1.5 / 1;
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.14);
 
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.03) 45%, rgba(0, 0, 0, 0.06) 100%);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    rgba(0, 0, 0, 0.06) 100%);
   color: rgba(255, 255, 255, 0.92);
 
   display: flex;
@@ -94,64 +79,78 @@ html, body {
   justify-content: center;
   cursor: pointer;
   user-select: none;
+  font-size: clamp(10px, 2.5vw, 20px);
+  font-weight: 900;
 
   box-shadow:
-    0 1.5vmin 3.5vmin rgba(0, 0, 0, 0.55),
+    0 4px 14px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1.2vmin 1.8vmin rgba(0, 0, 0, 0.55);
+    inset 0 -4px 8px rgba(0, 0, 0, 0.55);
 
-  transition: transform 120ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+  transition: transform 120ms ease, background 180ms ease,
+              border-color 180ms ease, box-shadow 180ms ease;
 }
 
-.btn::before{
-  content:"";
-  position:absolute;
-  width: calc(var(--btn-w) - 1vmin);
-  height: calc(var(--btn-h) - 1vmin);
-  border-radius: 1.4vmin;
-  pointer-events:none;
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 9px;
+  pointer-events: none;
   opacity: 0.65;
-  background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.03) 42%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(120% 120% at 50% 0%,
+    rgba(255,255,255,0.14) 0%,
+    rgba(255,255,255,0.03) 42%,
+    rgba(255,255,255,0) 70%);
 }
 
 .btn, .btn * { position: relative; }
 
-/* Botão largo ocupa 2 colunas */
+/* Botão play/pause ocupa 2 colunas */
 .btn-wide {
   grid-column: span 2;
-  width: calc(var(--btn-w) * 2 + var(--gap-x));
+  width: 100%;
+  aspect-ratio: 3.3 / 1;
 }
 
-.btn.btn-wide::before{
-  width: calc(var(--btn-w) * 2 + var(--gap-x) - 1vmin);
+/* ---- Labels ---- */
+.label, .label-spacer {
+  font: 700 clamp(8px, 1.8vw, 13px)/1
+    system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(255, 255, 255, 0.78);
+  letter-spacing: 0.28em;
+  user-select: none;
+  pointer-events: none;
 }
 
+.label-spacer {
+  grid-column: span 2;
+}
+
+/* ---- Estados dos botões ---- */
 .btn:hover {
   border-color: rgba(255, 255, 255, 0.20);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(0, 0, 0, 0.08) 100%);
-  box-shadow:
-    0 2vmin 4.5vmin rgba(0, 0, 0, 0.62),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1.4vmin 2.2vmin rgba(0, 0, 0, 0.58);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.04) 50%,
+    rgba(0, 0, 0, 0.08) 100%);
   transform: translateY(-1px);
 }
 
 .btn:active {
   transform: translateY(1px);
   border-color: rgba(255, 255, 255, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 55%, rgba(0, 0, 0, 0.12) 100%);
-  box-shadow:
-    0 1.2vmin 3vmin rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1.6vmin 2.2vmin rgba(0, 0, 0, 0.62);
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.02) 55%,
+    rgba(0, 0, 0, 0.12) 100%);
 }
 
 .btn:focus-visible {
   outline: none;
   box-shadow:
-    0 2vmin 4.5vmin rgba(0, 0, 0, 0.62),
+    0 4px 14px rgba(0, 0, 0, 0.62),
     inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1.4vmin 2.2vmin rgba(0, 0, 0, 0.58),
     0 0 0 3px rgba(255, 255, 255, 0.10);
 }
 
@@ -159,29 +158,4 @@ html, body {
   opacity: 0.45;
   cursor: default;
   transform: none;
-}
-
-/* icon sizing */
-#plusMin, #plusSec, #minusMin, #minusSec {
-  font-size: 1.8vmin;
-  font-weight: 900;
-}
-
-#playPause, #reset, #fullscreen {
-  font-size: 1.6vmin;
-  font-weight: 900;
-}
-
-.label, .label-spacer {
-  font: 700 1.1vmin/1 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  color: rgba(255, 255, 255, 0.78);
-  letter-spacing: 0.32em;
-  user-select: none;
-  pointer-events: none;
-}
-
-/* Keep SVG icons crisp if any */
-.icon {
-  width: 20px;
-  height: 20px;
 }

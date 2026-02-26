@@ -12,7 +12,6 @@ html, body {
   /* Cobre as safe areas (notch, barra de estado) com fundo preto */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   box-sizing: border-box;
-  outline: 6px solid #000; /* cobre barrinha fina em transições fullscreen */
 }
 
 #screen {

@@ -162,8 +162,22 @@ function exitFs() {
 }
 async function toggleFullscreen() {
   try {
-    if (isFullscreen()) await exitFs();
-    else await requestFs(document.documentElement);
+    if (isFullscreen()) {
+      await exitFs();
+      // Liberta a orientação ao sair do fullscreen
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } else {
+      await requestFs(document.documentElement);
+      // Em portrait, força landscape ao entrar em fullscreen
+      if (screen.orientation && screen.orientation.lock) {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        if (isPortrait) {
+          screen.orientation.lock("landscape").catch(() => {});
+        }
+      }
+    }
   } catch (_) {}
   resetAutoHide();
 }
@@ -199,9 +213,9 @@ function scaleMenu() {
   // O mais restritivo dos dois, sem ultrapassar o tamanho original
   let scale = Math.min(scaleByWidth, scaleByHeight, 1);
 
-  // Em landscape, aumenta 30%
+  // Em landscape, aumenta 56% (30% + 20% adicionais)
   const isPortrait = H > W;
-  if (!isPortrait) scale = Math.min(scale * 1.3, 1);
+  if (!isPortrait) scale = Math.min(scale * 1.56, 1);
 
   const r = document.documentElement;
   r.style.setProperty('--btn-w',        Math.round(92  * scale) + 'px');
@@ -855,7 +869,7 @@ function resetControlsPosition() {
   if (!controls) return;
   controls.style.left      = '50%';
   controls.style.top       = '';
-  controls.style.bottom    = '4px';
+  controls.style.bottom    = '0px';
   controls.style.transform = 'translateX(-50%)';
   controls.style.cursor    = '';
 }

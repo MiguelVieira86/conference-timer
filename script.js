@@ -122,19 +122,29 @@ function bindAutoHide() {
   };
 
   window.addEventListener("mousemove", wake, { passive: true });
-  window.addEventListener("pointerdown", wake, { passive: true });
+  window.addEventListener("pointerdown", (e) => {
+    // No mobile, o canvas trata do toggle — ignora toques que vêm do canvas
+    if (e.pointerType === "touch" && e.target === canvas) return;
+    wake(e);
+  }, { passive: true });
   window.addEventListener("keydown", wake);
 
-  // Clique/toque no canvas (fora do menu) esconde o menu imediatamente
+  // PC: clique no canvas esconde o menu imediatamente
   canvas.addEventListener("pointerdown", (e) => {
-    if (!controls.classList.contains("is-fading")) {
+    if (e.pointerType === "mouse" && !controls.classList.contains("is-fading")) {
       e.stopPropagation();
       hideNow();
     }
   });
+
+  // Mobile: toque no canvas faz toggle do menu (estilo YouTube)
   canvas.addEventListener("touchend", (e) => {
-    if (!controls.classList.contains("is-fading")) {
-      e.preventDefault();
+    e.preventDefault();
+    if (controls.classList.contains("is-fading")) {
+      // Menu invisível → mostra
+      resetAutoHide();
+    } else {
+      // Menu visível → esconde imediatamente
       hideNow();
     }
   }, { passive: false });

@@ -106,6 +106,14 @@ function resetAutoHide() {
   }, CURSOR_HIDE_DELAY);
 }
 
+// Esconde o menu imediatamente ao clicar/tocar fora dele
+function hideNow() {
+  if (menuTimer) clearTimeout(menuTimer);
+  menuTimer = null;
+  fadeMenu();
+  hideCursor();
+}
+
 function bindAutoHide() {
   const wake = (e) => {
     // Tecla B não acorda o menu/cursor
@@ -117,6 +125,19 @@ function bindAutoHide() {
   window.addEventListener("pointerdown", wake, { passive: true });
   window.addEventListener("touchstart", wake, { passive: true });
   window.addEventListener("keydown", wake);
+
+  // Clique/toque no canvas (fora do menu) esconde o menu imediatamente
+  canvas.addEventListener("pointerdown", (e) => {
+    if (!controls.classList.contains("is-fading")) {
+      e.stopPropagation();
+      hideNow();
+    }
+  });
+  canvas.addEventListener("touchstart", (e) => {
+    if (!controls.classList.contains("is-fading")) {
+      hideNow();
+    }
+  }, { passive: true });
 
   window.addEventListener("blur", () => {
     showMenu();
@@ -513,6 +534,7 @@ function pauseTemporarily() {
 // ---------- Ajustes (wrap/carry) ----------
 function adjustMinutes(delta) {
   const wasBlinking = isBlinking;
+  const wasRunning = running; // captura ANTES de qualquer alteração
 
   if (isBlinking) {
     stopBlinking();
@@ -521,7 +543,11 @@ function adjustMinutes(delta) {
   const { mm, ss } = getMMSS(totalSeconds);
   const newMM = (mm + delta + 100) % 100;
   totalSeconds = clampSecondsTotal(newMM * 60 + ss);
-  applyPresetFromCurrent();
+
+  // Só guarda o preset se o timer estava parado antes do ajuste
+  if (!wasRunning && !wasBlinking) {
+    presetSeconds = clampSecondsTotal(totalSeconds);
+  }
 
   // Qualquer ajuste manual reseta o flag do flash dos 5 min
   hasFlashedAt5Min = false;
@@ -546,6 +572,7 @@ function adjustMinutes(delta) {
 
 function adjustSeconds(delta) {
   const wasBlinking = isBlinking;
+  const wasRunning = running; // captura ANTES de qualquer pausa
 
   if (isBlinking) {
     stopBlinking();
@@ -564,7 +591,11 @@ function adjustSeconds(delta) {
   }
 
   totalSeconds = clampSecondsTotal(mm * 60 + ss);
-  applyPresetFromCurrent();
+
+  // Só guarda o preset se o timer estava parado antes do ajuste
+  if (!wasRunning && !wasBlinking) {
+    presetSeconds = clampSecondsTotal(totalSeconds);
+  }
 
   // Qualquer ajuste manual reseta o flag do flash dos 5 min
   hasFlashedAt5Min = false;

@@ -107,24 +107,17 @@ function resetAutoHide() {
 }
 
 // Esconde o menu imediatamente ao clicar/tocar fora dele
-let _hideCooldown = false;
 function hideNow() {
   if (menuTimer) clearTimeout(menuTimer);
   menuTimer = null;
   fadeMenu();
   hideCursor();
-  // Ignora eventos de "wake" durante 600ms para evitar que o touchend
-  // reapareça o menu imediatamente após o toque
-  _hideCooldown = true;
-  setTimeout(() => { _hideCooldown = false; }, 600);
 }
 
 function bindAutoHide() {
   const wake = (e) => {
     // Tecla B não acorda o menu/cursor
     if (e && e.code === "KeyB") return;
-    // Ignora eventos imediatamente após hideNow()
-    if (_hideCooldown) return;
     resetAutoHide();
   };
 
@@ -139,12 +132,12 @@ function bindAutoHide() {
       hideNow();
     }
   });
-  canvas.addEventListener("touchstart", (e) => {
+  canvas.addEventListener("touchend", (e) => {
     if (!controls.classList.contains("is-fading")) {
-      e.stopPropagation();
+      e.preventDefault();
       hideNow();
     }
-  }, { passive: true });
+  }, { passive: false });
 
   window.addEventListener("blur", () => {
     showMenu();

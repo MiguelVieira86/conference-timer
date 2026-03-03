@@ -123,7 +123,6 @@ function bindAutoHide() {
 
   window.addEventListener("mousemove", wake, { passive: true });
   window.addEventListener("pointerdown", wake, { passive: true });
-  window.addEventListener("touchstart", wake, { passive: true });
   window.addEventListener("keydown", wake);
 
   // Clique/toque no canvas (fora do menu) esconde o menu imediatamente
@@ -135,6 +134,7 @@ function bindAutoHide() {
   });
   canvas.addEventListener("touchstart", (e) => {
     if (!controls.classList.contains("is-fading")) {
+      e.stopPropagation();
       hideNow();
     }
   }, { passive: true });
@@ -545,7 +545,7 @@ function adjustMinutes(delta) {
   totalSeconds = clampSecondsTotal(newMM * 60 + ss);
 
   // Só guarda o preset se o timer estava parado antes do ajuste
-  if (!wasRunning && !wasBlinking) {
+  if (!wasRunning && !wasBlinking && !wasRunningBeforeAdjustment) {
     presetSeconds = clampSecondsTotal(totalSeconds);
   }
 
@@ -593,7 +593,8 @@ function adjustSeconds(delta) {
   totalSeconds = clampSecondsTotal(mm * 60 + ss);
 
   // Só guarda o preset se o timer estava parado antes do ajuste
-  if (!wasRunning && !wasBlinking) {
+  // (wasRunningBeforeAdjustment cobre o caso do hold repetido)
+  if (!wasRunning && !wasBlinking && !wasRunningBeforeAdjustment) {
     presetSeconds = clampSecondsTotal(totalSeconds);
   }
 
